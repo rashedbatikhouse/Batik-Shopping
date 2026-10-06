@@ -1,0 +1,7 @@
+{
+  "name": "Ghorer Shopping AI Sales & Order Agent",
+  "description": "AI-powered automated sales, product management, and order processing system for Ghorer Shopping with Facebook Messenger, Gemini AI, and WhatsApp Community integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
