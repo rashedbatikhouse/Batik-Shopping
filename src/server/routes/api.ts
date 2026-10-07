@@ -451,4 +451,30 @@ router.post('/webhook/facebook', async (req: Request, res: Response) => {
   }
 });
 
+// --- WHATSAPP CLOUD API WEBHOOK ENDPOINTS ---
+router.get('/webhook/whatsapp', (req: Request, res: Response) => {
+  const mode = req.query['hub.mode'] as string;
+  const token = req.query['hub.verify_token'] as string;
+  const challenge = req.query['hub.challenge'] as string;
+  const settings = db.getSettings();
+  const verifyToken = settings.whatsapp?.webhook_verify_token || 'ghorer_wa_verify_2026';
+
+  if (mode === 'subscribe' && token === verifyToken) {
+    db.log('WhatsApp', 'info', 'WhatsApp Webhook verified successfully');
+    return res.status(200).send(challenge);
+  }
+  db.log('WhatsApp', 'warn', `WhatsApp Webhook verification failed. Token received: ${token}`);
+  return res.sendStatus(403);
+});
+
+router.post('/webhook/whatsapp', async (req: Request, res: Response) => {
+  try {
+    db.log('WhatsApp', 'info', 'Received WhatsApp Cloud API webhook event');
+    res.status(200).send('EVENT_RECEIVED');
+  } catch (err: any) {
+    db.log('WhatsApp', 'error', `WhatsApp webhook processing error: ${err.message}`, err);
+    res.sendStatus(500);
+  }
+});
+
 export default router;

@@ -49,9 +49,30 @@ async function startServer() {
   } else {
     // Production static serving
     const distPath = path.resolve(process.cwd(), 'dist');
+    const indexPath = path.join(distPath, 'index.html');
+
+    // Auto-build fallback if dist/index.html is missing on Render or fresh deployment
+    if (!fs.existsSync(indexPath)) {
+      console.log('[Server] dist/index.html was not found. Triggering automated build...');
+      try {
+        const { execSync } = await import('child_process');
+        execSync('npm run build', { stdio: 'inherit' });
+      } catch (buildErr: any) {
+        console.error('[Server] Automated build error:', buildErr.message);
+      }
+    }
+
+    // Serve static files from root and subpath
     app.use(express.static(distPath));
+    app.use('/Batik-Shopping', express.static(distPath));
+
+    // SPA fallback
     app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(503).send('Application is compiling static assets. Please refresh in 5 seconds...');
+      }
     });
   }
 

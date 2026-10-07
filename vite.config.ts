@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/Batik-Shopping/',
+    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

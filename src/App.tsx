@@ -42,35 +42,35 @@ export default function App() {
   const fetchAppData = async () => {
     try {
       const [statsRes, prodRes, ordRes, custRes, handoffRes, settingsRes] = await Promise.all([
-        fetch('/api/dashboard/stats'),
-        fetch('/api/products'),
-        fetch('/api/orders'),
-        fetch('/api/customers'),
-        fetch('/api/handoff'),
-        fetch('/api/settings'),
+        fetch('/api/dashboard/stats').catch(() => null),
+        fetch('/api/products').catch(() => null),
+        fetch('/api/orders').catch(() => null),
+        fetch('/api/customers').catch(() => null),
+        fetch('/api/handoff').catch(() => null),
+        fetch('/api/settings').catch(() => null),
       ]);
 
-      if (statsRes.ok) {
+      if (statsRes && statsRes.ok) {
         const data = await statsRes.json();
-        setStats(data.data);
+        if (data.data) setStats(data.data);
       }
-      if (prodRes.ok) {
+      if (prodRes && prodRes.ok) {
         const data = await prodRes.json();
-        setProducts(data.data);
+        if (Array.isArray(data.data)) setProducts(data.data);
       }
-      if (ordRes.ok) {
+      if (ordRes && ordRes.ok) {
         const data = await ordRes.json();
-        setOrders(data.data);
+        if (Array.isArray(data.data)) setOrders(data.data);
       }
-      if (custRes.ok) {
+      if (custRes && custRes.ok) {
         const data = await custRes.json();
-        setCustomers(data.data);
+        if (Array.isArray(data.data)) setCustomers(data.data);
       }
-      if (handoffRes.ok) {
+      if (handoffRes && handoffRes.ok) {
         const data = await handoffRes.json();
-        setHandoffRequests(data.data);
+        if (Array.isArray(data.data)) setHandoffRequests(data.data);
       }
-      if (settingsRes.ok) {
+      if (settingsRes && settingsRes.ok) {
         const sData = await settingsRes.json();
         const prov = sData.data.ai?.provider || 'gemini';
         const model = sData.data.ai?.model || 'gemini-3.8-flash';
@@ -80,6 +80,21 @@ export default function App() {
         else if (prov === 'deepseek') label = `DeepSeek (${model})`;
         else label = `Gemini (${model})`;
         setActiveAIInfo(label);
+      } else {
+        try {
+          const saved = localStorage.getItem('gs_ai_settings');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            const prov = parsed.provider || 'gemini';
+            const model = parsed.model || 'gemini-3.8-flash';
+            let label = model;
+            if (prov === 'openai') label = `OpenAI (${model})`;
+            else if (prov === 'grok') label = `Grok (${model})`;
+            else if (prov === 'deepseek') label = `DeepSeek (${model})`;
+            else label = `Gemini (${model})`;
+            setActiveAIInfo(label);
+          }
+        } catch {}
       }
     } catch (err) {
       console.error('[App] Failed to fetch data:', err);
